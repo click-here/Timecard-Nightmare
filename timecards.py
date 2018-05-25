@@ -1,9 +1,13 @@
 from openpyxl import Workbook
 import random
+import numpy as np
+
+def generate_weekly_hours(median,days_per_week):
+    return np.round(np.random.normal(median,2,days_per_week)*4)/4
 
 wb = Workbook()
 
-weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
 projects = ['Redesign Mobile UI',
             'Write unit tests',
@@ -24,12 +28,17 @@ ws['F3'] = 'Employee'
 ws['F4'] = 'Week Ending'
 ws['F5'] = 'Manager'
 
+hours = generate_weekly_hours(8,5)
+
 weekday_row = 7
 weekday_offset = 3
+timecard_projects = random.sample(projects, random.randint(1, 4))
+
 for col in enumerate(weekdays):
     ws.cell(column=col[0] + weekday_offset, row=weekday_row, value=col[1])
+    for proj in enumerate(timecard_projects):
 
-timecard_projects = random.sample(projects, random.randint(1, 4))
+
 
 for proj in enumerate(timecard_projects):
     row = weekday_row + proj[0] + 1
