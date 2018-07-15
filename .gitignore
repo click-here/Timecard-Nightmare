@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 
 .idea
+timecards
+open_save.py
 Sample.xlsx
 
 # C extensions

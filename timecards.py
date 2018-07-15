@@ -1,9 +1,17 @@
 from openpyxl import Workbook
 import random
 import numpy as np
+import pandas as pd
 import re
 import string
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import NamedStyle, Font, Border, Side
+
+names_df = pd.read_csv(r'https://raw.githubusercontent.com/click-here/Baby-Name-Popularity/master/top1000.csv')
+
+col_headers = ['Projects', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Total']
+names = ["Emma","Olivia","Ava","Isabella","Sophia","Mia","Charlotte","Amelia","Evelyn","Abigail","Harper","Emily","Elizabeth","Avery","Sofia","Ella","Madison","Scarlett","Victoria","Aria","Liam","Noah","William","James","Logan","Benjamin","Mason","Elijah","Oliver","Jacob","Lucas","Michael","Alexander","Ethan","Daniel","Matthew","Aiden","Henry","Joseph","Jackson"]
+
 
 def generate_weekly_hours(median,days_per_week):
     return np.round(np.random.normal(median,2,days_per_week)*4)/4
@@ -25,10 +33,16 @@ def generate_proj_hours(projects):
     project_split = shift_length / proj_cnt
     return np.round(np.random.normal(project_split, 1, proj_cnt) * 4) / 4
 
-def build_timecard_table():
-    wb = Workbook()
+def calc_top_right(rng):
+    c,r = rng2tuple(rng)
+    c = c + len(col_headers[1:])
+    return get_rng(c,r)
 
-    col_headers = ['Projects', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Total']
+
+    
+def build_timecard_table(cnt):
+    wb = Workbook()
+   
 
     projects = ['Redesign Mobile UI',
                 'Write unit tests',
@@ -40,27 +54,40 @@ def build_timecard_table():
                 'Build CSS Piano Animation',
                 'Honeypot Project']
 
-    dest_filename = 'timecard.xlsx'
+    dest_filename = 'timecards\\timecard_%s.xlsx'%cnt
 
     ws = wb.active
     ws.title = "Timecard"
 
+    ws['F2'] = 'Employee ID'
+    ws['G2'] = '0000%s'%(cnt)
     ws['F3'] = 'Employee'
+    ws['G3'] = names_df.sample(1)['name'].iloc[0]
     ws['F4'] = 'Week Ending'
+    ws['G4'] = '7/21/2018'
     ws['F5'] = 'Manager'
+    ws['G5'] = names_df.sample(1)['name'].iloc[0]
 
     # set the top left of the hours table
     top_left_cell = 'C7'
+    top_right_cell = calc_top_right(top_left_cell)
 
     project_count = random.randint(1, 4)
     timecard_projects = random.sample(projects, project_count)
 
-
+    #bold the header row
+    header_row = '%s:%s'%(top_left_cell,top_right_cell)
+    for row in ws[header_row]:
+        for cell in row:
+            cell.number_format = '0'
+            cell.font = Font(bold=True,color='1061B6')
+    
     for col in range(len(col_headers)):
         header = col_headers[col]
         c,r = rng2tuple(top_left_cell)
         active_col = c + col
         ws.cell(column=active_col, row=r, value= header)
+
         task_hours = generate_proj_hours(timecard_projects)
         for proj in range(len(timecard_projects)):
             active_row = r + proj + 1
@@ -83,6 +110,8 @@ def build_timecard_table():
 
     wb.save(filename=dest_filename)
 
-build_timecard_table()
+for i in range(100):
+    build_timecard_table(i)
+    
 
 
